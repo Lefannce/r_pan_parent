@@ -3,20 +3,17 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>r-pan-parent</artifactId>
+        <artifactId>r-pan-framework</artifactId>
         <groupId>com.imooc.pan</groupId>
         <version>1.0</version>
     </parent>
-    <modules>
-        <module>core</module>
-        <module>web</module>
-        <module>swagger2</module>
-        <module>orm</module>
-    </modules>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>r-pan-framework</artifactId>
+    <modules>
+        <module>mybatis-plus</module>
+    </modules>
 
+    <artifactId>r-pan-orm</artifactId>
     <packaging>pom</packaging>
 
     <properties>

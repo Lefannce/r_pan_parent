@@ -16,6 +16,7 @@
     <description>R Pan项目服务端</description>
     <modules>
         <module>distribution</module>
+        <module>framework/orm/mybatis-plus</module>
     </modules>
 
     <packaging>pom</packaging>

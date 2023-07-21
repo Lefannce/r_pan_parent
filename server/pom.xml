@@ -18,22 +18,36 @@
     </properties>
 
     <dependencies>
-        <dependency>
+         <dependency>
             <groupId>com.imooc.pan</groupId>
             <artifactId>r-pan-web</artifactId>
             <version>1.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.swagger</groupId>-->
-<!--            <artifactId>swagger-annotations</artifactId>-->
-<!--            <version>1.5.14</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.imooc.pan</groupId>
             <artifactId>r-pan-swagger2</artifactId>
             <version>1.0</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-devtools</artifactId>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>com.imooc.pan</groupId>
+            <artifactId>r-pan-mybatis-plus</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -82,7 +96,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.imooc.pan.server.RPanServerLauncher</mainClass>
+                    <mainClass>com.com.imooc.pan.server.RPanServerLauncher</mainClass>
                     <layout>ZIP</layout>
                 </configuration>
                 <executions>

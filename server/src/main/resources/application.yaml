@@ -11,9 +11,28 @@ spring:
     multipart:
       max-file-size: 3072MB
       max-request-size: 3072MB
+  datasource:
+    username: r_pan
+    password: YR56hK5NdwEWtP8A
+    url: jdbc:mysql://47.113.216.13:3306/r_pan?characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    #数据库索引
+    database: 1
+    host: 47.113.216.13
+    port: 6379
+    password: Hujing123
+
+mybatis-plus:
+  mapper-locations: classpath:mappers/**/*.xml
 
 server:
   port: 8080
+
+logging:
+  file: ${user.home}/logs/${spring.application.name}/${spring.application.name}.log
+  level:
+    root: INFO
 
 management:
   endpoints:
@@ -22,15 +41,14 @@ management:
         include: '*'
         exclude: env,beans
 
-
 swagger2:
   show: true
   group-name: ${spring.application.name}
-  base-package: com.imooc.pan
+  base-package: com.imooc.pan.server.modules
   title: r-pan-server docs
   description: r-pan-server docs
   terms-of-service-url: http://127.0.0.1:${server.port}
-  contact-name: rubin
-  contact-url: https://blog.rubinchu.com
-  contact-email: rubinchu@126.com
+  contact-name: imooc
+  contact-url: https://blog.imoocchu.com
+  contact-email: imoocchu@126.com
   version: 1.0
