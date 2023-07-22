@@ -1,6 +1,6 @@
 package com.imooc.pan.schedule.test.config;
 
-import com.imooc.pan.core.constants.RPanConstants;
+import org.imooc.pan.core.constants.RPanConstants;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 

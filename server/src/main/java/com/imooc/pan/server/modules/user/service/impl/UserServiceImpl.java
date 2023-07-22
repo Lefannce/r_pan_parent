@@ -2,7 +2,7 @@ package com.imooc.pan.server.modules.user.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.imooc.pan.server.modules.user.entity.RPanUser;
-import com.imooc.pan.server.modules.user.service.RPanUserService;
+import com.imooc.pan.server.modules.user.service.IUserService;
 import com.imooc.pan.server.modules.user.mapper.RPanUserMapper;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 * @createDate 2023-07-21 22:35:18
 */
 @Service
-public class RPanUserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser>
-    implements RPanUserService{
+public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser>
+    implements IUserService {
 
 }
 
