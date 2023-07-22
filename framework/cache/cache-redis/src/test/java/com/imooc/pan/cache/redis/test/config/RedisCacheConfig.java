@@ -1,7 +1,7 @@
 package com.imooc.pan.cache.redis.test.config;
 
-import com.imooc.pan.core.constants.RPanConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.imooc.pan.core.constants.RPanConstants;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
