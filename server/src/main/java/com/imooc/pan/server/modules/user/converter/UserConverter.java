@@ -73,7 +73,7 @@ public interface UserConverter {
 
     /**
      * 拼装用户基本信息返回实体
-     *
+     *两个映射一个需要手动定义映射对象
      * @param rPanUser
      * @param rPanUserFile
      * @return
