@@ -1,8 +1,11 @@
 package com.imooc.pan.server.modules.file.service;
 
-import com.imooc.pan.server.modules.file.context.CreateFolderContext;
+import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+
+import java.util.List;
 
 /**
  * @author Hu Jing
@@ -20,4 +23,29 @@ public interface IUserFileService extends IService<RPanUserFile> {
     Long createFolder(CreateFolderContext createFolderContext);
 
     RPanUserFile getUserRootFile(Long userId);
+
+    /**
+     * 查询用户文件列表
+     * @param context
+     * @return
+     */
+    List<RPanUserFileVO> getFileList(QueryFileListContext context);
+
+    /**
+     * 更新文件名
+     */
+    void updateFilename(UpdateFilenameContext updateFilenameContext);
+
+    /**
+     * 批量删除用户文件
+     * @param context
+     */
+    void deleteFile(DeleteFileContext context);
+
+    /**
+     * 文件秒传
+     * @param context
+     * @return
+     */
+    boolean secUpload(SecUploadFileContext context);
 }

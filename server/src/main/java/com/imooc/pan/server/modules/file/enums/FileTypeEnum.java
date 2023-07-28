@@ -95,6 +95,7 @@ public enum FileTypeEnum {
     public static Integer getFileTypeCode(String fileSuffix) {
         Optional<FileTypeEnum> result = Arrays.stream(values())
                 .sorted(Comparator.comparingInt(FileTypeEnum::getOrder).reversed())
+                //通过断言器器匹配是不是能命中对应枚举
                 .filter(value -> value.getTester().test(fileSuffix))
                 .findFirst();
         if (result.isPresent()) {

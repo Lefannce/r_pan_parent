@@ -8,6 +8,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @description 针对表【r_pan_file(物理文件信息表)】的数据库操作Service
 * @createDate 2023-07-21 22:39:16
 */
-public interface RPanFileService extends IService<RPanFile> {
+public interface IFileService extends IService<RPanFile> {
 
 }
