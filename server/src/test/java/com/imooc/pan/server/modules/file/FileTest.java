@@ -9,6 +9,7 @@ import com.imooc.pan.server.modules.file.entity.RPanFile;
 import com.imooc.pan.server.modules.file.entity.RPanFileChunk;
 import com.imooc.pan.server.modules.file.enums.DelFlagEnum;
 import com.imooc.pan.server.modules.file.enums.MergeFlagEnum;
+import com.imooc.pan.server.modules.file.service.IFileChunkService;
 import com.imooc.pan.server.modules.file.service.IFileService;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
 import com.imooc.pan.server.modules.file.vo.*;
@@ -50,11 +51,10 @@ public class FileTest {
     @Autowired
     private IFileService iFileService;
 
-//    @Autowired
-//    private IFileService iFileService;
-//
-//    @Autowired
-//    private IFileChunkService iFileChunkService;
+    @Autowired
+    private IFileChunkService iFileChunkService;
+
+
 
     /**
      * 测试用户查询文件列表成功
@@ -358,77 +358,77 @@ public class FileTest {
         Assert.isFalse(result);
     }
 
-//    /**
-//     * 测试单文件上传成功
-//     */
-//    @Test
-//    public void testUploadSuccess() {
-//        Long userId = register();
-//        UserInfoVO userInfoVO = info(userId);
-//
-//        FileUploadContext context = new FileUploadContext();
-//        MultipartFile file = genarateMultipartFile();
-//        context.setFile(file);
-//        context.setParentId(userInfoVO.getRootFileId());
-//        context.setUserId(userId);
-//        context.setIdentifier("12345678");
-//        context.setTotalSize(file.getSize());
-//        context.setFilename(file.getOriginalFilename());
-//        iUserFileService.upload(context);
-//
-//        QueryFileListContext queryFileListContext = new QueryFileListContext();
-//        queryFileListContext.setDelFlag(DelFlagEnum.NO.getCode());
-//        queryFileListContext.setUserId(userId);
-//        queryFileListContext.setParentId(userInfoVO.getRootFileId());
-//        List<RPanUserFileVO> fileList = iUserFileService.getFileList(queryFileListContext);
-//        Assert.notEmpty(fileList);
-//        Assert.isTrue(fileList.size() == 1);
-//    }
-//
-//    /**
-//     * 测试查询用户已上传的文件分片信息列表成功
-//     */
-//    @Test
-//    public void testQueryUploadedChunksSuccess() {
-//        Long userId = register();
-//
-//        String identifier = "123456789";
-//
-//        RPanFileChunk record = new RPanFileChunk();
-//        record.setId(IdUtil.get());
-//        record.setIdentifier(identifier);
-//        record.setRealPath("realPath");
-//        record.setChunkNumber(1);
-//        record.setExpirationTime(DateUtil.offsetDay(new Date(), 1));
-//        record.setCreateUser(userId);
-//        record.setCreateTime(new Date());
-//        boolean save = iFileChunkService.save(record);
-//        Assert.isTrue(save);
-//
-//        QueryUploadedChunksContext context = new QueryUploadedChunksContext();
-//        context.setIdentifier(identifier);
-//        context.setUserId(userId);
-//
-//        UploadedChunksVO vo = iUserFileService.getUploadedChunks(context);
-//        Assert.notNull(vo);
-//        Assert.notEmpty(vo.getUploadedChunks());
-//    }
-//
-//    /**
-//     * 测试文件分片上传成功
-//     */
-//    @Test
-//    public void uploadWithChunkTest() throws InterruptedException {
-//        Long userId = register();
-//        UserInfoVO userInfoVO = info(userId);
-//
-//        CountDownLatch countDownLatch = new CountDownLatch(10);
-//        for (int i = 0; i < 10; i++) {
-//            new ChunkUploader(countDownLatch, i + 1, 10, iUserFileService, userId, userInfoVO.getRootFileId()).start();
-//        }
-//        countDownLatch.await();
-//    }
-//
+    /**
+     * 测试单文件上传成功
+     */
+    @Test
+    public void testUploadSuccess() {
+        Long userId = register();
+        UserInfoVO userInfoVO = info(userId);
+
+        FileUploadContext context = new FileUploadContext();
+        MultipartFile file = genarateMultipartFile();
+        context.setFile(file);
+        context.setParentId(userInfoVO.getRootFileId());
+        context.setUserId(userId);
+        context.setIdentifier("12345678");
+        context.setTotalSize(file.getSize());
+        context.setFilename(file.getOriginalFilename());
+        iUserFileService.upload(context);
+
+        QueryFileListContext queryFileListContext = new QueryFileListContext();
+        queryFileListContext.setDelFlag(DelFlagEnum.NO.getCode());
+        queryFileListContext.setUserId(userId);
+        queryFileListContext.setParentId(userInfoVO.getRootFileId());
+        List<RPanUserFileVO> fileList = iUserFileService.getFileList(queryFileListContext);
+        Assert.notEmpty(fileList);
+        Assert.isTrue( fileList.size() == 1);
+    }
+
+    /**
+     * 测试查询用户已上传的文件分片信息列表成功
+     */
+    @Test
+    public void testQueryUploadedChunksSuccess() {
+        Long userId = register();
+
+        String identifier = "123456789";
+
+        RPanFileChunk record = new RPanFileChunk();
+        record.setId(IdUtil.get());
+        record.setIdentifier(identifier);
+        record.setRealPath("realPath");
+        record.setChunkNumber(1);
+        record.setExpirationTime(DateUtil.offsetDay(new Date(), 1));
+        record.setCreateUser(userId);
+        record.setCreateTime(new Date());
+        boolean save = iFileChunkService.save(record);
+        Assert.isTrue(save);
+
+        QueryUploadedChunksContext context = new QueryUploadedChunksContext();
+        context.setIdentifier(identifier);
+        context.setUserId(userId);
+
+        UploadedChunksVO vo = iUserFileService.getUploadedChunks(context);
+        Assert.notNull(vo);
+        Assert.notEmpty(vo.getUploadedChunks());
+    }
+
+    /**
+     * 测试文件分片上传成功
+     */
+    @Test
+    public void uploadWithChunkTest() throws InterruptedException {
+        Long userId = register();
+        UserInfoVO userInfoVO = info(userId);
+
+        CountDownLatch countDownLatch = new CountDownLatch(10);
+        for (int i = 0; i < 10; i++) {
+            new ChunkUploader(countDownLatch, i + 1, 10, iUserFileService, userId, userInfoVO.getRootFileId()).start();
+        }
+        countDownLatch.await();
+    }
+
 //    /**
 //     * 测试文件夹树查询
 //     */
@@ -643,87 +643,87 @@ public class FileTest {
 //
 //    /************************************************private************************************************/
 //
-//    /**
-//     * 文件分片上传器
-//     */
-//    @AllArgsConstructor
-//    private static class ChunkUploader extends Thread {
-//
-//        private CountDownLatch countDownLatch;
-//
-//        private Integer chunk;
-//
-//        private Integer chunks;
-//
-//        private IUserFileService iUserFileService;
-//
-//        private Long userId;
-//
-//        private Long parentId;
-//
-//        /**
-//         * 1、上传文件分片
-//         * 2、根据上传的结果来调用文件分片合并
-//         */
-//        @Override
-//        public void run() {
-//            super.run();
-//            MultipartFile file = genarateMultipartFile();
-//            Long totalSize = file.getSize() * chunks;
-//            String filename = "test.txt";
-//            String identifier = "123456789";
-//
-//            FileChunkUploadContext fileChunkUploadContext = new FileChunkUploadContext();
-//            fileChunkUploadContext.setFilename(filename);
-//            fileChunkUploadContext.setIdentifier(identifier);
-//            fileChunkUploadContext.setTotalChunks(chunks);
-//            fileChunkUploadContext.setChunkNumber(chunk);
-//            fileChunkUploadContext.setCurrentChunkSize(file.getSize());
-//            fileChunkUploadContext.setTotalSize(totalSize);
-//            fileChunkUploadContext.setFile(file);
-//            fileChunkUploadContext.setUserId(userId);
-//
-//            FileChunkUploadVO fileChunkUploadVO = iUserFileService.chunkUpload(fileChunkUploadContext);
-//
-//            if (fileChunkUploadVO.getMergeFlag().equals(MergeFlagEnum.READY.getCode())) {
-//                System.out.println("分片 " + chunk + " 检测到可以合并分片");
-//
-//                FileChunkMergeContext fileChunkMergeContext = new FileChunkMergeContext();
-//                fileChunkMergeContext.setFilename(filename);
-//                fileChunkMergeContext.setIdentifier(identifier);
-//                fileChunkMergeContext.setTotalSize(totalSize);
-//                fileChunkMergeContext.setParentId(parentId);
-//                fileChunkMergeContext.setUserId(userId);
-//
-//                iUserFileService.mergeFile(fileChunkMergeContext);
-//                countDownLatch.countDown();
-//            } else {
-//                countDownLatch.countDown();
-//            }
-//
-//        }
-//
-//    }
-//
-//    /**
-//     * 生成模拟的网络文件实体
-//     *
-//     * @return
-//     */
-//    private static MultipartFile genarateMultipartFile() {
-//        MultipartFile file = null;
-//        try {
-//            StringBuffer stringBuffer = new StringBuffer();
-//            for (int i = 0; i < 1024 * 1024; i++) {
-//                stringBuffer.append("a");
-//            }
-//            file = new MockMultipartFile("file", "test.txt", "multipart/form-data", stringBuffer.toString().getBytes("UTF-8"));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return file;
-//    }
-//
+    /**
+     * 文件分片上传器
+     */
+    @AllArgsConstructor
+    private static class ChunkUploader extends Thread {
+
+        private CountDownLatch countDownLatch;
+
+        private Integer chunk;
+
+        private Integer chunks;
+
+        private IUserFileService iUserFileService;
+
+        private Long userId;
+
+        private Long parentId;
+
+        /**
+         * 1、上传文件分片
+         * 2、根据上传的结果来调用文件分片合并
+         */
+        @Override
+        public void run() {
+            super.run();
+            MultipartFile file = genarateMultipartFile();
+            Long totalSize = file.getSize() * chunks;
+            String filename = "test.txt";
+            String identifier = "123456789";
+
+            FileChunkUploadContext fileChunkUploadContext = new FileChunkUploadContext();
+            fileChunkUploadContext.setFilename(filename);
+            fileChunkUploadContext.setIdentifier(identifier);
+            fileChunkUploadContext.setTotalChunks(chunks);
+            fileChunkUploadContext.setChunkNumber(chunk);
+            fileChunkUploadContext.setCurrentChunkSize(file.getSize());
+            fileChunkUploadContext.setTotalSize(totalSize);
+            fileChunkUploadContext.setFile(file);
+            fileChunkUploadContext.setUserId(userId);
+
+            FileChunkUploadVO fileChunkUploadVO = iUserFileService.chunkUpload(fileChunkUploadContext);
+
+            if (fileChunkUploadVO.getMergeFlag().equals(MergeFlagEnum.READY.getCode())) {
+                System.out.println("分片 " + chunk + " 检测到可以合并分片");
+
+                FileChunkMergeContext fileChunkMergeContext = new FileChunkMergeContext();
+                fileChunkMergeContext.setFilename(filename);
+                fileChunkMergeContext.setIdentifier(identifier);
+                fileChunkMergeContext.setTotalSize(totalSize);
+                fileChunkMergeContext.setParentId(parentId);
+                fileChunkMergeContext.setUserId(userId);
+
+                iUserFileService.mergeFile(fileChunkMergeContext);
+                countDownLatch.countDown();
+            } else {
+                countDownLatch.countDown();
+            }
+
+        }
+
+    }
+
+    /**
+     * 生成模拟的网络文件实体
+     *
+     * @return
+     */
+    private static MultipartFile genarateMultipartFile() {
+        MultipartFile file = null;
+        try {
+            StringBuffer stringBuffer = new StringBuffer();
+            for (int i = 0; i < 1024 * 1024; i++) {
+                stringBuffer.append("a");
+            }
+            file = new MockMultipartFile("file", "test.txt", "multipart/form-data", stringBuffer.toString().getBytes("UTF-8"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file;
+    }
+
     /**
      * 用户注册
      *

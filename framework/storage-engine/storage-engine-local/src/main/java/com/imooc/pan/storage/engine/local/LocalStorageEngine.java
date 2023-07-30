@@ -16,7 +16,7 @@ import java.util.List;
  * 本地的文件存储引擎实现方案
  */
 @Component
-public class LocalStorageEngine extends AbstractStorageEngine {
+public class  LocalStorageEngine extends AbstractStorageEngine {
 
     @Autowired
     private LocalStorageEngineConfig config;

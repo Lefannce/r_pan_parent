@@ -6,12 +6,11 @@ import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.*;
 import com.imooc.pan.server.modules.file.converter.FileConverter;
 import com.imooc.pan.server.modules.file.enums.DelFlagEnum;
-import com.imooc.pan.server.modules.file.po.CreateFolderPO;
-import com.imooc.pan.server.modules.file.po.DeleteFilePO;
-import com.imooc.pan.server.modules.file.po.SecUploadFilePO;
-import com.imooc.pan.server.modules.file.po.UpdateFilenamePO;
+import com.imooc.pan.server.modules.file.po.*;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
+import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+import com.imooc.pan.server.modules.file.vo.UploadedChunksVO;
 import io.swagger.models.auth.In;
 import org.imooc.pan.core.constants.RPanConstants;
 import org.imooc.pan.core.response.R;
@@ -87,11 +86,12 @@ public class FileController {
 
     /**
      * 批量删除用户文件
+     *
      * @param deleteFilePO
      * @return
      */
     @DeleteMapping("file")
-    public R deleteFile(@Validated @RequestBody DeleteFilePO deleteFilePO){
+    public R deleteFile(@Validated @RequestBody DeleteFilePO deleteFilePO) {
         DeleteFileContext context = fileConverter.deleteFilePO2DeleteFileContext(deleteFilePO);
 
         String fileIds = deleteFilePO.getFileIds();
@@ -104,11 +104,12 @@ public class FileController {
 
     /**
      * 文件秒传
+     *
      * @param secUploadFilePO
      * @return
      */
     @PostMapping("file/sec-upload")
-    public R secUpload(@Validated @RequestBody SecUploadFilePO secUploadFilePO){
+    public R secUpload(@Validated @RequestBody SecUploadFilePO secUploadFilePO) {
         SecUploadFileContext context = fileConverter.secUploadFilePO2SecUploadFileContext(secUploadFilePO);
         boolean success = iUserFileService.secUpload(context);
         if (success)
@@ -117,7 +118,49 @@ public class FileController {
         return R.fail("文件唯一标识不存在,请手动执行文件上传操作");
     }
 
+    /**
+     * 单一文件上传
+     *
+     * @param fileUploadPO
+     * @return
+     */
+    @PostMapping("file/upload")
+    public R upload(@Validated FileUploadPO fileUploadPO) {
+        FileUploadContext context = fileConverter.fileUploadPO2FileUploadContext(fileUploadPO);
+        iUserFileService.upload(context);
+        return R.success();
+    }
+
+    /**
+     * 文件分片上传
+     * @param fileChunkUploadPO
+     * @return 返回是否需要合并
+     */
+    @PostMapping("file/chunk-upload")
+    public R<FileChunkUploadVO> chunkUpload(@Validated FileChunkUploadPO fileChunkUploadPO) {
+        FileChunkUploadContext context = fileConverter.fileChunkUploadPO2FileChunkUploadContext(fileChunkUploadPO);
+        FileChunkUploadVO vo = iUserFileService.chunkUpload(context);
+        return R.data(vo);
+    }
+
+    /**
+     * 查询用户已上传分片列表
+     * @param queryUploadedChunksPO
+     * @return
+     */
+     @GetMapping("file/chunk-upload")
+    public R<UploadedChunksVO> getUploadChunks(@Validated QueryUploadedChunksPO queryUploadedChunksPO) {
+         QueryUploadedChunksContext context = fileConverter.queryUploadedChunksPO2QueryUploadedChunksContext(queryUploadedChunksPO);
+         UploadedChunksVO vo = iUserFileService.getUploadedChunks(context);
+         return R.data(vo);
+    }
 
 
+  @GetMapping("file/merge")
+    public R mergeFile(@Validated  @RequestBody FileChunkMergePO fileChunkMergePO) {
+      FileChunkMergeContext context = fileConverter.fileChunkMergePO2FileChunkMergeContext(fileChunkMergePO);
+      iUserFileService.mergeFile(context);
+         return R.success();
+    }
 
 }

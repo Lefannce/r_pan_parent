@@ -10,14 +10,19 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.imooc.pan.server.common.event.file.DeleteFileEvent;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.*;
+import com.imooc.pan.server.modules.file.converter.FileConverter;
 import com.imooc.pan.server.modules.file.entity.RPanFile;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
 import com.imooc.pan.server.modules.file.enums.DelFlagEnum;
 import com.imooc.pan.server.modules.file.enums.FileTypeEnum;
 import com.imooc.pan.server.modules.file.enums.FolderFlagEnum;
+import com.imooc.pan.server.modules.file.service.IFileChunkService;
+import com.imooc.pan.server.modules.file.service.IFileService;
 import com.imooc.pan.server.modules.file.service.IUserFileService;
 import com.imooc.pan.server.modules.file.mapper.RPanUserFileMapper;
+import com.imooc.pan.server.modules.file.vo.FileChunkUploadVO;
 import com.imooc.pan.server.modules.file.vo.RPanUserFileVO;
+import com.imooc.pan.server.modules.file.vo.UploadedChunksVO;
 import org.apache.commons.lang3.StringUtils;
 import org.imooc.pan.core.constants.RPanConstants;
 import org.imooc.pan.core.exception.RPanBusinessException;
@@ -27,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.*;
@@ -43,7 +49,13 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
     private ApplicationContext applicationContext;
 
     @Autowired
-    private IFileServiceImpl iFileService;
+    private IFileService iFileService;
+
+    @Autowired
+    private FileConverter fileConverter;
+
+    @Autowired
+    private IFileChunkService iFileChunkService;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
@@ -134,19 +146,107 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
      */
     @Override
     public boolean secUpload(SecUploadFileContext context) {
-        RPanFile record = getFileByUserIdAndIdentifier(context.getUserId(), context.getIdentifier());
-        if (Objects.isNull(record))
-            return false;
+        List<RPanFile> fileList = getFileListByUserIdAndIdentifier(context.getUserId(), context.getIdentifier());
+        if (CollectionUtils.isNotEmpty(fileList)) {
+            RPanFile record = fileList.get(RPanConstants.ZERO_INT);
+            saveUserFile(context.getParentId(),
+                    context.getFilename(),
+                    FolderFlagEnum.NO,
+                    FileTypeEnum.getFileTypeCode(FileUtils.getFileSuffix(context.getFilename())),
+                    record.getFileId(),
+                    context.getUserId(),
+                    record.getFileSizeDesc());
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 单一文件上传
+     * 1,上传文件并保存实体文件记录
+     * 2,保存用户文件关系
+     *
+     * @param context
+     */
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void upload(FileUploadContext context) {
+        saveFile(context);
         saveUserFile(context.getParentId(),
                 context.getFilename(),
                 FolderFlagEnum.NO,
                 FileTypeEnum.getFileTypeCode(FileUtils.getFileSuffix(context.getFilename())),
-                record.getFileId(),
+                context.getRecord().getFileId(),
                 context.getUserId(),
-                record.getFileSizeDesc());
-        return true;
+                context.getRecord().getFileSizeDesc());
     }
 
+    /**
+     * 文件分片上传
+     * 1,上传实体文件
+     * 2,保存分片文件记录
+     * 3,校验是否全部分片上传完毕
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public FileChunkUploadVO chunkUpload(FileChunkUploadContext context) {
+        FileChunkSaveContext fileChunkSaveContext = fileConverter.fileChunkUploadContext2FileChunkSaveContext(context);
+        iFileChunkService.saveChunkFile(fileChunkSaveContext);
+        FileChunkUploadVO vo = new FileChunkUploadVO();
+        vo.setMergeFlag(fileChunkSaveContext.getMergeFlagEnum().getCode());
+        return vo;
+    }
+
+    /**
+     * 查询用户已上传分片列表
+     *
+     * 1,查询已上传分片列表
+     * 2,封装返回实体
+     *
+     * @param context
+     * @return
+     */
+    @Override
+    public UploadedChunksVO getUploadedChunks(QueryUploadedChunksContext context) {
+        QueryWrapper queryWrapper = Wrappers.query();
+        //查询指定字段
+        queryWrapper.select("chunk_number");
+        queryWrapper.eq("identifier",context.getIdentifier());
+        queryWrapper.eq("create_user",context.getUserId());
+        //gt 大于当前时间
+        queryWrapper.gt("expiration_time",new Date());
+
+        //查询一个字段,value是上放指定的查询字段,转换成Integer类型
+        List<Integer>  uploadChunks  = iFileChunkService.listObjs(queryWrapper, value -> (Integer) value);
+
+        UploadedChunksVO vo = new UploadedChunksVO();
+        vo.setUploadedChunks(uploadChunks);
+        return vo;
+    }
+
+    /**
+     * 合并分片
+     *
+     * 1,文件分片物理合并
+     * 2,保存文件实体记录 委托给fileserver做
+     * 3,保存文件关系映射
+     * @param context
+     */
+    @Override
+    public void mergeFile(FileChunkMergeContext context) {
+       mergeFileChunkAndSaveFile(context);
+       saveUserFile(context.getParentId(),
+                context.getFilename(),
+                FolderFlagEnum.NO,
+                FileTypeEnum.getFileTypeCode(FileUtils.getFileSuffix(context.getFilename())),
+                context.getRecord().getFileId(),
+                context.getUserId(),
+                context.getRecord().getFileSizeDesc());
+
+
+    }
 
 
 
@@ -404,23 +504,58 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
             throw new RPanBusinessException("当前登录用户没有删除此文件权限");
     }
 
-     /**
+    /**
      * 通过用户id和文件唯一标识查询对应文件是否存在
      *
      * @param userId
      * @param identifier
      * @return
      */
-    private RPanFile getFileByUserIdAndIdentifier(Long userId, String identifier) {
-        QueryWrapper queryWrapper = Wrappers.query();
-        queryWrapper.eq("create_user",userId);
-        queryWrapper.eq("identifier",identifier);
-        List<RPanFile> records = iFileService.list(queryWrapper);
-        if (CollectionUtils.isEmpty(records)){
-            return null;
-        }
-        //返回第一条记录作为基准记录
-        return records.get(RPanConstants.ZERO_INT);
+    private List<RPanFile> getFileListByUserIdAndIdentifier(Long userId, String identifier) {
+        QueryRealFileListContext context = new QueryRealFileListContext();
+        context.setUserId(userId);
+        context.setIdentifier(identifier);
+        return iFileService.getFileList(context);
+    }
+
+
+//    private RPanFile getFileByUserIdAndIdentifier(Long userId, String identifier) {
+//        QueryWrapper queryWrapper = Wrappers.query();
+//        queryWrapper.eq("create_user",userId);
+//        queryWrapper.eq("identifier",identifier);
+//        List<RPanFile> records = iFileService.list(queryWrapper);
+//        if (CollectionUtils.isEmpty(records)){
+//            return null;
+//        }
+//        //返回第一条记录作为基准记录
+//        return records.get(RPanConstants.ZERO_INT);
+//
+//    }
+
+
+    /**
+     * 上传文件并保存实体记录
+     * 委托给实体文件的Service去完成操作
+     *
+     * @param context
+     */
+    private void saveFile(FileUploadContext context) {
+        FileSaveContext fileSaveContext = fileConverter.fileUploadContext2FileSaveContext(context);
+        iFileService.saveFile(fileSaveContext);
+        //record被忽略没有转换过来
+        context.setRecord(fileSaveContext.getRecord());
+
+    }
+
+      /**
+     * 合并文件分片并保存物理文件记录
+     * 委托给ifileService的方法
+     * @param context
+     */
+    private void mergeFileChunkAndSaveFile(FileChunkMergeContext context) {
+        FileChunkMergeAndSaveContext fileChunkMergeAndSaveContext = fileConverter.fileChunkMergeContext2FileChunkMergeAndSaveContext(context);
+        iFileService.mergeFileChunkAndSaveFile(fileChunkMergeAndSaveContext);
+        context.setRecord(fileChunkMergeAndSaveContext.getRecord());
 
     }
 

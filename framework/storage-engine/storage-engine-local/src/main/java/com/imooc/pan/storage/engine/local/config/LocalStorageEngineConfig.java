@@ -1,7 +1,7 @@
 package com.imooc.pan.storage.engine.local.config;
 
-import com.imooc.pan.core.utils.FileUtils;
 import lombok.Data;
+import org.imooc.pan.core.utils.FileUtils;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 

@@ -77,7 +77,7 @@ public class FileUtils {
     /**
      * 生成文件的存储路径
      * <p>
-     * 生成规则：基础路径 + 年 + 月 + 日 + 随机的文件名称
+     * 生成规则：基础路径 + 年 + 月 + 日 + 随机的文件名称 + 后缀
      *
      * @param basePath
      * @param filename
@@ -139,6 +139,7 @@ public class FileUtils {
      * @return
      */
     public static String generateDefaultStoreFileRealPath() {
+        ///读取系统中的属性
         return new StringBuffer(System.getProperty("user.home"))
                 .append(File.separator)
                 .append("rpan")

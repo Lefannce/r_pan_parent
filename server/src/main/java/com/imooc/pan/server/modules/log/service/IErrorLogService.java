@@ -8,6 +8,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 * @description 针对表【r_pan_error_log(错误日志表)】的数据库操作Service
 * @createDate 2023-07-21 22:41:03
 */
-public interface RPanErrorLogService extends IService<RPanErrorLog> {
+public interface IErrorLogService extends IService<RPanErrorLog> {
 
 }
