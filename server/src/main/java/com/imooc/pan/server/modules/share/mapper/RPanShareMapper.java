@@ -2,6 +2,10 @@ package com.imooc.pan.server.modules.share.mapper;
 
 import com.imooc.pan.server.modules.share.entity.RPanShare;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.imooc.pan.server.modules.share.vo.RPanShareUrlListVO;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author Hu Jing
@@ -11,6 +15,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RPanShareMapper extends BaseMapper<RPanShare> {
 
+    /**
+     * 查询用户分享列表
+     * @param userId
+     * @return
+     */
+    List<RPanShareUrlListVO> selectShareVoListByUserId(@Param("userId") Long userId);
 }
 
 

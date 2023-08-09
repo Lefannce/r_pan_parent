@@ -304,7 +304,9 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
      */
     private void generateAndSaveAccessToken(UserLoginContext userLoginContext) {
         RPanUser entity = userLoginContext.getEntity();
+
         String accessToken = JwtUtil.generateToken(entity.getUsername(), UserConstants.LOGIN_USER_ID, entity.getUserId(), UserConstants.ONE_DAY_LONG);
+
         Cache cache = cacheManager.getCache(CacheConstants.R_PAN_CACHE_NAME);
         cache.put(UserConstants.USER_LOGIN_PREFIX + entity.getUserId(), accessToken);
         userLoginContext.setAccessToken(accessToken);

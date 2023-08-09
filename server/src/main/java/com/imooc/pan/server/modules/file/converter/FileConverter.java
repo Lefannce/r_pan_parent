@@ -55,11 +55,11 @@ public interface FileConverter {
 
     FileChunkMergeAndSaveContext fileChunkMergeContext2FileChunkMergeAndSaveContext(FileChunkMergeContext context);
 
-//    @Mapping(target = "label", source = "record.filename")
-//    @Mapping(target = "id", source = "record.fileId")
-//    @Mapping(target = "children", expression = "java(com.google.common.collect.Lists.newArrayList())")
-//    FolderTreeNodeVO rPanUserFile2FolderTreeNodeVO(RPanUserFile record);
-//
-//    RPanUserFileVO rPanUserFile2RPanUserFileVO(RPanUserFile record);
+    @Mapping(target = "label", source = "record.filename")
+    @Mapping(target = "id", source = "record.fileId")
+    @Mapping(target = "children", expression = "java(org.assertj.core.util.Lists.newArrayList())")
+    FolderTreeNodeVO rPanUserFile2FolderTreeNodeVO(RPanUserFile record);
+
+    RPanUserFileVO rPanUserFile2RPanUserFileVO(RPanUserFile record);
 
 }

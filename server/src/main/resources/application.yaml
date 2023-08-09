@@ -52,3 +52,18 @@ swagger2:
   contact-url: https://blog.imoocchu.com
   contact-email: imoocchu@126.com
   version: 1.0
+
+
+
+  #配置存储引擎,不配走默认本地
+#com:
+#  imooc:
+#    pan:
+#      storage:
+#        engine:
+#          fdfs:
+#            connect-timeout: 600
+#            tracker-list:
+#              - 47.113.216.13:22122
+#            group: group1
+
