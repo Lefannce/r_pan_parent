@@ -156,7 +156,7 @@ public class UserFileServiceImpl extends ServiceImpl<RPanUserFileMapper, RPanUse
     @Override
     public boolean secUpload(SecUploadFileContext context) {
         List<RPanFile> fileList = getFileListByUserIdAndIdentifier(context.getUserId(), context.getIdentifier());
-        if (org.apache.commons.collections.CollectionUtils.isNotEmpty(fileList)) {
+        if (CollectionUtils.isNotEmpty(fileList)) {
             RPanFile record = fileList.get(RPanConstants.ZERO_INT);
             saveUserFile(context.getParentId(),
                     context.getFilename(),

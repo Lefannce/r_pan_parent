@@ -1,0 +1,24 @@
+{
+  "groups": [
+    {
+      "name": "com.imooc.pan.lock.zookeeper",
+      "type": "com.imooc.pan.lock.zookeeper.ZooKeeperLockProperties",
+      "sourceType": "com.imooc.pan.lock.zookeeper.ZooKeeperLockProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "com.imooc.pan.lock.zookeeper.host",
+      "type": "java.lang.String",
+      "description": "zk链接地址，多个使用逗号隔开",
+      "sourceType": "com.imooc.pan.lock.zookeeper.ZooKeeperLockProperties"
+    },
+    {
+      "name": "com.imooc.pan.lock.zookeeper.root-path",
+      "type": "java.lang.String",
+      "description": "zk分布式锁的根路径",
+      "sourceType": "com.imooc.pan.lock.zookeeper.ZooKeeperLockProperties"
+    }
+  ],
+  "hints": []
+}

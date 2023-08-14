@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Api(tags = "分享模块")
 @RestController
 @Validated
+@CrossOrigin
 public class ShareController {
 
     @Autowired

@@ -83,6 +83,18 @@
         <!--            <version>1.0</version>-->
         <!--        </dependency>-->
 
+<!--        布隆过滤器-->
+        <dependency>
+            <groupId>com.imooc.pan</groupId>
+            <artifactId>r-pan-bloom-filter-local</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.imooc.pan</groupId>
+            <artifactId>r-pan-lock-redis</artifactId>
+            <version>1.0</version>
+        </dependency>
 
     </dependencies>
 
