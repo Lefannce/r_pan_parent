@@ -67,3 +67,25 @@ swagger2:
 #              - 47.113.216.13:22122
 #            group: group1
 
+
+com:
+    imooc:
+        pan:
+            #            storage:
+            #                engine:
+            #                    oss:
+            #                        bucket-name: pan-imooc-test-1
+            #                        endpoint: oss-cn-beijing.aliyuncs.com
+            #                        access-key-id: LTAI5tJiLByyUfFwWYEXZFvg
+            #                        access-key-secret: Fm5rkdaHCkwaFqOfm6Md21mIi26cjv
+            #                        auto-create-bucket: true
+            server:
+                share-prefix: http://127.0.0.1:5173
+            bloom:
+                filter:
+                    local:
+                        items:
+                            -   name: SHARE_SIMPLE_DETAIL
+                                funnel-type-name: LONG
+                                expected-insertions: 10000000
+                                fpp: 0.01

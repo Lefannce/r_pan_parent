@@ -301,18 +301,18 @@ public class ShareTest {
         Assert.notEmpty(fileVOList);
     }
 
-    @Test
-    public void init() {
-        CreateShareUrlContext context = new CreateShareUrlContext();
-        context.setUserId(1664949523080634368L);
-        context.setShareType(ShareTypeEnum.NEED_SHARE_CODE.getCode());
-        context.setShareDayType(ShareDayTypeEnum.PERMANENT_VALIDITY.getCode());
-        context.setShareFileIdList(Lists.newArrayList(1664950147318898688L));
-        for (int i = 0; i < 10000000; i++) {
-            context.setShareName("测试分享" + i);
-            iShareService.create(context);
-        }
-    }
+//    @Test
+//    public void init() {
+//        CreateShareUrlContext context = new CreateShareUrlContext();
+//        context.setUserId(1664949523080634368L);
+//        context.setShareType(ShareTypeEnum.NEED_SHARE_CODE.getCode());
+//        context.setShareDayType(ShareDayTypeEnum.PERMANENT_VALIDITY.getCode());
+//        context.setShareFileIdList(Lists.newArrayList(1664950147318898688L));
+//        for (int i = 0; i < 10000000; i++) {
+//            context.setShareName("测试分享" + i);
+//            iShareService.create(context);
+//        }
+//    }
 
     /************************************************private************************************************/
 

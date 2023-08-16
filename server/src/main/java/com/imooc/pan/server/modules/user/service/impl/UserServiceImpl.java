@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.imooc.pan.cache.core.constants.CacheConstants;
+import com.imooc.pan.server.common.cache.AnnotationCacheService;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
 import com.imooc.pan.server.modules.file.context.CreateFolderContext;
 import com.imooc.pan.server.modules.file.entity.RPanUserFile;
@@ -23,12 +24,16 @@ import org.imooc.pan.core.utils.IdUtil;
 import org.imooc.pan.core.utils.JwtUtil;
 import org.imooc.pan.core.utils.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -47,6 +52,10 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
 
     @Autowired
     private CacheManager cacheManager;
+
+    @Autowired
+    @Qualifier(value = "userAnnotationCacheService")
+    private AnnotationCacheService<RPanUser> cacheService;
 
     /**
      * 用户注册的业务实现
@@ -154,7 +163,6 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
     }
 
     /**
-     *
      * 在线修改密码
      * 1,校验旧密码
      * 2,重置新密码
@@ -173,6 +181,7 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
      * 查询用户基本信息实体
      * 查询用户根文件夹实体
      * 拼装vo对象返回
+     *
      * @param userId
      * @return
      */
@@ -180,16 +189,82 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
     public UserInfoVO info(Long userId) {
         RPanUser entity = getById(userId);
         if (Objects.isNull(entity))
-            throw  new RPanBusinessException("用户信息查询失败");
+            throw new RPanBusinessException("用户信息查询失败");
 
         RPanUserFile rPanUserFile = getUserRootFileInfo(userId);
         if (Objects.isNull(rPanUserFile))
             throw new RPanBusinessException("查询用户根文件夹信息失败");
         //返回拼接好的Vo对象
-        return userConverter.assembleUserInfoVO(entity,rPanUserFile);
+        return userConverter.assembleUserInfoVO(entity, rPanUserFile);
     }
 
 
+
+    /**
+     * 根据 ID 删除
+     *
+     * @param id 主键ID
+     */
+    @Override
+    public boolean removeById(Serializable id) {
+        return cacheService.removeById(id);
+//        return super.removeById(id);
+    }
+
+    /**
+     * 删除（根据ID 批量删除）
+     *
+     * @param idList 主键ID列表
+     */
+    @Override
+    public boolean removeByIds(Collection<? extends Serializable> idList) {
+        throw new RPanBusinessException("请更换手动缓存");
+//        return super.removeByIds(idList);
+    }
+
+    /**
+     * 根据 ID 选择修改
+     *
+     * @param entity 实体对象
+     */
+    @Override
+    public boolean updateById(RPanUser entity) {
+        return cacheService.updateById(entity.getUserId(), entity);
+//        return super.updateById(entity);
+    }
+
+    /**
+     * 根据ID 批量更新
+     *
+     * @param entityList 实体对象集合
+     */
+    @Override
+    public boolean updateBatchById(Collection<RPanUser> entityList) {
+        throw new RPanBusinessException("请更换手动缓存");
+//        return super.updateBatchById(entityList);
+    }
+
+    /**
+     * 根据 ID 查询
+     *
+     * @param id 主键ID
+     */
+    @Override
+    public RPanUser getById(Serializable id) {
+        return cacheService.getById(id);
+//        return super.getById(id);
+    }
+
+    /**
+     * 查询（根据ID 批量查询）
+     *
+     * @param idList 主键ID列表
+     */
+    @Override
+    public List<RPanUser> listByIds(Collection<? extends Serializable> idList) {
+        throw new RPanBusinessException("请更换手动缓存");
+//        return super.listByIds(idList);
+    }
 
 
     /************************************************private************************************************/
@@ -415,9 +490,10 @@ public class UserServiceImpl extends ServiceImpl<RPanUserMapper, RPanUser> imple
             throw new RPanBusinessException("旧密码错误");
     }
 
-     /**
+    /**
      * 获取用户根文件夹信息实体
      * 委托给fileServer
+     *
      * @param userId
      * @return
      */

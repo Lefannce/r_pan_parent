@@ -7,7 +7,9 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.collect.Lists;
-import com.google.common.hash.BloomFilter;
+import com.imooc.pan.bloom.filter.core.BloomFilter;
+import com.imooc.pan.bloom.filter.core.BloomFilterManager;
+import com.imooc.pan.server.common.cache.ManualCacheService;
 import com.imooc.pan.server.common.config.PanServerConfig;
 import com.imooc.pan.server.common.event.log.ErrorLogEvent;
 import com.imooc.pan.server.modules.file.constants.FileConstants;
@@ -29,6 +31,7 @@ import com.imooc.pan.server.modules.share.mapper.RPanShareMapper;
 import com.imooc.pan.server.modules.share.vo.*;
 import com.imooc.pan.server.modules.user.entity.RPanUser;
 import com.imooc.pan.server.modules.user.service.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.util.Sets;
@@ -39,11 +42,13 @@ import org.imooc.pan.core.utils.IdUtil;
 import org.imooc.pan.core.utils.JwtUtil;
 import org.imooc.pan.core.utils.UUIDUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,8 +59,9 @@ import java.util.stream.Collectors;
  * @createDate 2023-07-21 22:43:16
  */
 @Service
+@Slf4j
 public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
-        implements IShareService , ApplicationContextAware {
+        implements IShareService, ApplicationContextAware {
 
     @Autowired
     private PanServerConfig config;
@@ -69,7 +75,17 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
     @Autowired
     private IUserFileService iUserFileService;
 
+    @Autowired
+    private BloomFilterManager manager;
+
+
     private ApplicationContext applicationContext;
+
+    @Autowired
+    @Qualifier(value = "shareManualCacheService")
+    private ManualCacheService<RPanShare> cacheService;
+
+    private static final String BLOOM_FILTER_NAME = "SHARE_SIMPLE_DETAIL";
 
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -91,6 +107,9 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
         saveShare(context);
         saveShareFiles(context);
         RPanShareUrlVO vo = assembleShareVO(context);
+
+        afterCreate(context, vo);
+
         return vo;
 
     }
@@ -229,7 +248,7 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
         doSaveFiles(context);
     }
 
-     /**
+    /**
      * 分享的文件下载
      * <p>
      * 1、校验分享状态
@@ -246,7 +265,7 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
     }
 
 
-     /**
+    /**
      * 刷新受影响的对应的分享的状态
      * <p>
      * 1、查询所有受影响的分享的ID集合
@@ -265,28 +284,111 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
         shareIdSet.stream().forEach(this::refreshOneShareStatus);
     }
 
+
+    /**
+     * 根据 ID 删除
+     *
+     * @param id 主键ID
+     */
+    @Override
+    public boolean removeById(Serializable id) {
+        return cacheService.removeById(id);
+//        return super.removeById(id);
+    }
+
+    /**
+     * 删除（根据ID 批量删除）
+     *
+     * @param idList 主键ID列表
+     */
+    @Override
+    public boolean removeByIds(Collection<? extends Serializable> idList) {
+        return cacheService.removeByIds(idList);
+//        return super.removeByIds(idList);
+    }
+
+    /**
+     * 根据 ID 选择修改
+     *
+     * @param entity 实体对象
+     */
+    @Override
+    public boolean updateById(RPanShare entity) {
+        return cacheService.updateById(entity.getShareId(), entity);
+//        return super.updateById(entity);
+    }
+
+    /**
+     * 根据ID 批量更新
+     *
+     * @param entityList 实体对象集合
+     */
+    @Override
+    public boolean updateBatchById(Collection<RPanShare> entityList) {
+        if (CollectionUtils.isEmpty(entityList)) {
+            return true;
+        }
+        Map<Long, RPanShare> entityMap = entityList.stream().collect(Collectors.toMap(RPanShare::getShareId, e -> e));
+        return cacheService.updateByIds(entityMap);
+//        return super.updateBatchById(entityList);
+    }
+
+    /**
+     * 根据 ID 查询
+     *
+     * @param id 主键ID
+     */
+    @Override
+    public RPanShare getById(Serializable id) {
+        return cacheService.getById(id);
+//        return super.getById(id);
+    }
+
+    /**
+     * 查询（根据ID 批量查询）
+     *
+     * @param idList 主键ID列表
+     */
+    @Override
+    public List<RPanShare> listByIds(Collection<? extends Serializable> idList) {
+        return cacheService.getByIds(idList);
+//        return super.listByIds(idList);
+    }
+
+
+    /**
+     * 滚动查询已存在的分享ID
+     *
+     * @param startId
+     * @param limit
+     * @return
+     */
+    @Override
+    public List<Long> rollingQueryShareId(long startId, long limit) {
+        return baseMapper.rollingQueryShareId(startId, limit);
+    }
+
+
     /******************************************private*******************************************************/
 
 
-
-
- /**
+    /**
      * 执行刷新文件分享状态的动作
      *
-     * @param shareId
+     * @param record
      * @param shareStatus
      */
-    private void doChangeShareStatus(Long shareId, ShareStatusEnum shareStatus) {
-        UpdateWrapper updateWrapper = Wrappers.update();
-        updateWrapper.eq("share_id",shareId);
-        updateWrapper.set("share_status",shareStatus.getCode());
-        if (!update(updateWrapper)) {
-            applicationContext.publishEvent(new ErrorLogEvent(this,"跟新分享状态失败,请手动更改状态,分享Id为:" + shareId +"分享 "+
-                    "状态为:" + shareStatus.getCode(),RPanConstants.ZERO_LONG));
+    private void doChangeShareStatus(RPanShare record, ShareStatusEnum shareStatus) {
+        record.setShareStatus(shareStatus.getCode());
+
+        if (!updateById(record)) {
+            applicationContext.publishEvent(new ErrorLogEvent(this, "跟新分享状态失败,请手动更改状态,分享Id为:" + record.getShareId() + "分享 " +
+                    "状态为:" + shareStatus.getCode(), RPanConstants.ZERO_LONG));
         }
 
     }
- /**
+
+    /**
      * 检查该文件以及所有的文件夹信息均为正常状态
      *
      * @param fileId
@@ -323,7 +425,7 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
     }
 
 
-  /**
+    /**
      * 刷新一个分享的分享状态
      * <p>
      * 1、查询对应的分享信息，判断有效
@@ -347,11 +449,11 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
             return;
         }
 
-        doChangeShareStatus(shareId, shareStatus);
+        doChangeShareStatus(record, shareStatus);
     }
 
 
-  /**
+    /**
      * 通过文件ID查询对应的分享ID集合
      *
      * @param allAvailableFileIdList
@@ -367,7 +469,7 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
     }
 
 
-      /**
+    /**
      * 执行分享文件下载的动作
      * 委托文件模块去做
      *
@@ -762,6 +864,22 @@ public class ShareServiceImpl extends ServiceImpl<RPanShareMapper, RPanShare>
 
         context.setRecord(record);
     }
+
+
+    /**
+     * 创建分享链接后置处理
+     *
+     * @param context
+     * @param vo
+     */
+    private void afterCreate(CreateShareUrlContext context, RPanShareUrlVO vo) {
+        BloomFilter<Long> bloomFilter = manager.getFilter(BLOOM_FILTER_NAME);
+        if (Objects.nonNull(bloomFilter)) {
+            bloomFilter.put(context.getRecord().getShareId());
+            log.info("crate share, add share id to bloom filter, share id is {}", context.getRecord().getShareId());
+        }
+    }
+
 }
 
 

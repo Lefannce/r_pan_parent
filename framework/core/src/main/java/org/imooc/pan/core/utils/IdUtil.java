@@ -242,4 +242,6 @@ public class IdUtil {
         System.out.println(encrypt(get()));
     }
 
+
+
 }
