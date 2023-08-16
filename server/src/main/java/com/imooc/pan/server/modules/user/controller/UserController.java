@@ -6,13 +6,17 @@ import com.imooc.pan.server.common.utils.UserIdUtil;
 import com.imooc.pan.server.modules.user.context.*;
 import com.imooc.pan.server.modules.user.converter.UserConverter;
 import com.imooc.pan.server.modules.user.po.*;
+import com.imooc.pan.server.modules.user.service.IUserSearchHistoryService;
 import com.imooc.pan.server.modules.user.service.IUserService;
 import com.imooc.pan.server.modules.user.vo.UserInfoVO;
+import com.imooc.pan.server.modules.user.vo.UserSearchHistoryVO;
 import org.imooc.pan.core.response.R;
 import org.imooc.pan.core.utils.IdUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 用户模块控制实体
@@ -27,6 +31,10 @@ public class UserController {
 
     @Autowired
     private UserConverter userConverter;
+
+     @Autowired
+    private IUserSearchHistoryService iUserSearchHistoryService;
+
 
     /**
      * 用户注册接口
@@ -131,5 +139,19 @@ public class UserController {
         UserInfoVO userInfoVO = iUserService.info(UserIdUtil.get());
         return R.data(userInfoVO);
     }
+
+    /**
+     * 搜索历史
+     * @return
+     */
+  @GetMapping("user/search/histories")
+    public R<List<UserSearchHistoryVO>> getSearchHistories() {
+        QueryUserSearchHistoryContext context = new QueryUserSearchHistoryContext();
+        context.setUserId(UserIdUtil.get());
+        List<UserSearchHistoryVO> result = iUserSearchHistoryService.getSearchHistories(context);
+        return R.data(result);
+    }
+
+
 
 }

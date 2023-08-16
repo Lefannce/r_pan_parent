@@ -45,6 +45,11 @@ public class FileController {
     @GetMapping("files")
     public R<List<RPanUserFileVO>> list(@NotBlank(message = "父文件夹ID不能为空") @RequestParam(value = "parentId", required = false) String parentId, @RequestParam(value = "fileTypes", required = false, defaultValue = FileConstants.ALL_FILE_TYPE) String fileTypes) {
         Long realParentId = -1L;
+        if (!FileConstants.ALL_FILE_TYPE.equals(parentId)) {
+            realParentId = IdUtil.decrypt(parentId);
+        }
+
+
         List<Integer> fileTypeArray = null;
 
         if (!Objects.equals(FileConstants.ALL_FILE_TYPE, fileTypes)) {
@@ -106,7 +111,7 @@ public class FileController {
      * @param secUploadFilePO
      * @return
      */
-     @PostMapping("file/sec-upload")
+    @PostMapping("file/sec-upload")
     public R secUpload(@Validated @RequestBody SecUploadFilePO secUploadFilePO) {
         SecUploadFileContext context = fileConverter.secUploadFilePO2SecUploadFileContext(secUploadFilePO);
         boolean result = iUserFileService.secUpload(context);
@@ -258,6 +263,7 @@ public class FileController {
 
     /**
      * 文件模糊搜索
+     *
      * @param fileSearchPO
      * @return
      */
@@ -277,10 +283,11 @@ public class FileController {
 
     /**
      * 查询面包屑导航列表
+     *
      * @param fileId
      * @return
      */
-     @GetMapping("file/breadcrumbs")
+    @GetMapping("file/breadcrumbs")
     public R<List<BreadcrumbVO>> getBreadcrumbs(@NotBlank(message = "文件ID不能为空") @RequestParam(value = "fileId", required = false) String fileId) {
         QueryBreadcrumbsContext context = new QueryBreadcrumbsContext();
         context.setFileId(IdUtil.decrypt(fileId));

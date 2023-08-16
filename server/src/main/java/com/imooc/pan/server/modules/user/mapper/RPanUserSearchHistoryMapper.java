@@ -1,7 +1,12 @@
 package com.imooc.pan.server.modules.user.mapper;
 
+import com.imooc.pan.server.modules.user.context.QueryUserSearchHistoryContext;
 import com.imooc.pan.server.modules.user.entity.RPanUserSearchHistory;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.imooc.pan.server.modules.user.vo.UserSearchHistoryVO;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
 * @author Hu Jing
@@ -11,6 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RPanUserSearchHistoryMapper extends BaseMapper<RPanUserSearchHistory> {
 
+    List<UserSearchHistoryVO> selectSearchHistories(@Param("param") QueryUserSearchHistoryContext context);
 }
 
 

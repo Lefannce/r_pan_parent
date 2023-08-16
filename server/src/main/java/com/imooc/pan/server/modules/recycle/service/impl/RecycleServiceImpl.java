@@ -198,16 +198,18 @@ public class RecycleServiceImpl implements IRecycleService, ApplicationContextAw
 
     }
 
-    /**
-     * 执行文件删除动作
-     * @param context
-     */
-    private void doDelete(DeleteContext context) {
-        List<Long> fileIdList = context.getFileIdList();
-        if (!iUserFileService.removeByIds(fileIdList))
-            throw new RPanBusinessException("文件删除失败");
-    }
-
+  /**
+   * 执行文件删除的动作
+   *
+   * @param context
+   */
+  private void doDelete(DeleteContext context) {
+      List<RPanUserFile> allRecords = context.getAllRecords();
+      List<Long> fileIdList = allRecords.stream().map(RPanUserFile::getFileId).collect(Collectors.toList());
+      if (!iUserFileService.removeByIds(fileIdList)) {
+          throw new RPanBusinessException("文件删除失败");
+      }
+  }
     /**
      * 递归查询所有子文件列表
      * @param context
